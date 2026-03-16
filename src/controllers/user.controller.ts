@@ -4,6 +4,17 @@ import logger from "../utils/logger.js";
 
 export const createUser = async (req: Request, res: Response) => {
     try {
+        const { email } = req.body;
+
+        const existingUser = await userModel.findOne({ email });
+
+        if (existingUser) {
+            logger.error("Email already exists");
+            return res.status(400).json({
+                message: "Email already exists"
+            });
+        }
+
         const user = await userModel.create(req.body);
 
         logger.info("User created",
@@ -22,6 +33,10 @@ export const createUser = async (req: Request, res: Response) => {
 export const displayAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await userModel.find();
+
+        if (users.length === 0) {
+            logger.error(`There are ${users.length} users.`);
+        }
 
         logger.info("Fetched all users",
             { count: users.length }
